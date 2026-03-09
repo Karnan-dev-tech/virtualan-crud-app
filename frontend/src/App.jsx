@@ -4,6 +4,8 @@ import "./App.css";
 
 function App() {
 
+  const API = "http://127.0.0.1:8000/users";
+
   const [users,setUsers] = useState([]);
   const [name,setName] = useState("");
   const [email,setEmail] = useState("");
@@ -11,11 +13,13 @@ function App() {
   const [editing,setEditing] = useState(false);
   const [message,setMessage] = useState("");
 
-  const API = "http://127.0.0.1:8000/users";
-
   const getUsers = async ()=>{
-    const res = await axios.get(API);
-    setUsers(res.data);
+    try{
+      const res = await axios.get(API);
+      setUsers(res.data);
+    }catch(err){
+      console.error(err);
+    }
   };
 
   useEffect(()=>{
@@ -65,20 +69,26 @@ function App() {
 
     if(!validateForm()) return;
 
-    await axios.post(API,{
-      name,
-      email,
-      age:Number(age)
-    });
+    try{
 
-    setMessage("User added successfully");
+      await axios.post(API,{
+        name,
+        email,
+        age:Number(age)
+      });
 
-    setTimeout(() => {
-    setMessage("");
-},  5000);
+      setMessage("User added successfully");
 
-    clearForm();
-    getUsers();
+      setTimeout(()=>{
+        setMessage("");
+      },3000);
+
+      clearForm();
+      getUsers();
+
+    }catch(err){
+      console.error(err);
+    }
   };
 
   const deleteUser = async (email)=>{
@@ -87,15 +97,22 @@ function App() {
 
     if(!confirmDelete) return;
 
-    await axios.delete(`${API}/${email}`);
+    try{
 
-    setMessage("User deleted successfully");
+      await axios.delete(`${API}/${email}`);
 
-    setTimeout(() => {
-    setMessage("");
-},  5000);
+      setMessage("User deleted successfully");
 
-    getUsers();
+      setTimeout(()=>{
+        setMessage("");
+      },3000);
+
+      getUsers();
+
+    }catch(err){
+      console.error(err);
+    }
+
   };
 
   const editUser = (user)=>{
@@ -103,28 +120,35 @@ function App() {
     setName(user.name);
     setEmail(user.email);
     setAge(user.age);
-
     setEditing(true);
+
   };
 
   const updateUser = async ()=>{
 
     if(!validateForm()) return;
 
-    await axios.put(`${API}/${email}`,{
-      name,
-      email,
-      age:Number(age)
-    });
+    try{
 
-    setMessage("User updated successfully");
+      await axios.put(`${API}/${email}`,{
+        name,
+        email,
+        age:Number(age)
+      });
 
-    setTimeout(() => {
-    setMessage("");
-    }, 5000);
+      setMessage("User updated successfully");
 
-    clearForm();
-    getUsers();
+      setTimeout(()=>{
+        setMessage("");
+      },3000);
+
+      clearForm();
+      getUsers();
+
+    }catch(err){
+      console.error(err);
+    }
+
   };
 
   return (
@@ -199,33 +223,41 @@ function App() {
 
         <tbody>
 
-          {users.map((u)=>(
-            <tr key={u.email}>
-
-              <td>{u.name}</td>
-              <td>{u.email}</td>
-              <td>{u.age}</td>
-
-              <td>
-
-                <button
-                  className="edit-btn"
-                  onClick={()=>editUser(u)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="delete-btn"
-                  onClick={()=>deleteUser(u.email)}
-                >
-                  Delete
-                </button>
-
-              </td>
-
+          {users.length === 0 ? (
+            <tr>
+              <td colSpan="4">No users found</td>
             </tr>
-          ))}
+          ) : (
+
+            users.map((u)=>(
+              <tr key={u.email}>
+
+                <td>{u.name}</td>
+                <td>{u.email}</td>
+                <td>{u.age}</td>
+
+                <td>
+
+                  <button
+                    className="edit-btn"
+                    onClick={()=>editUser(u)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="delete-btn"
+                    onClick={()=>deleteUser(u.email)}
+                  >
+                    Delete
+                  </button>
+
+                </td>
+
+              </tr>
+            ))
+
+          )}
 
         </tbody>
 
